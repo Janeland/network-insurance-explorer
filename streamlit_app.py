@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
 import math
 from pathlib import Path
@@ -13,7 +12,6 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 DATA_PATH = ROOT / "web/network_insurance_explorer/data/network_insurance_explorer_data.js"
-VISIT_COUNTER_PATH = ROOT / "visit_counter.json"
 
 COLORS = {
     "Domestic": "#168b86",
@@ -43,44 +41,6 @@ def load_data() -> dict:
     if text.endswith(";"):
         text = text[:-1]
     return json.loads(text)
-
-
-def register_visit() -> None:
-    """Count one anonymous visit per Streamlit browser session.
-
-    The counter is intentionally invisible in the UI. It writes a tiny local
-    JSON file and emits a log line visible in Streamlit Cloud logs.
-    """
-    if st.session_state.get("_visit_counted"):
-        return
-    st.session_state["_visit_counted"] = True
-
-    now = datetime.now(timezone.utc)
-    day = now.date().isoformat()
-    payload = {"total": 0, "by_day": {}, "last_visit_utc": None}
-
-    try:
-        if VISIT_COUNTER_PATH.exists():
-            payload.update(json.loads(VISIT_COUNTER_PATH.read_text(encoding="utf-8")))
-        payload["total"] = int(payload.get("total") or 0) + 1
-        payload["by_day"] = payload.get("by_day") or {}
-        payload["by_day"][day] = int(payload["by_day"].get(day) or 0) + 1
-        payload["last_visit_utc"] = now.isoformat(timespec="seconds")
-
-        tmp_path = VISIT_COUNTER_PATH.with_suffix(".tmp")
-        tmp_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
-        tmp_path.replace(VISIT_COUNTER_PATH)
-
-        print(
-            "VISIT_COUNTER "
-            f"total={payload['total']} "
-            f"day={day} "
-            f"day_count={payload['by_day'][day]} "
-            f"last_visit_utc={payload['last_visit_utc']}",
-            flush=True,
-        )
-    except Exception as exc:
-        print(f"VISIT_COUNTER_ERROR {type(exc).__name__}: {exc}", flush=True)
 
 
 def pct(x, digits=1):
@@ -410,7 +370,6 @@ def bridge():
 
 def main():
     st.set_page_config(page_title="Network Insurance Explorer", layout="wide")
-    register_visit()
     st.title("Network Insurance Explorer")
     st.caption("Where foreign risk reaches households, and which spare routes can absorb it.")
 

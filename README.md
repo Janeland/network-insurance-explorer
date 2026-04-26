@@ -20,12 +20,3 @@ streamlit run streamlit_app.py
 ## Deploy on Streamlit Community Cloud
 
 Use `streamlit_app.py` as the app entrypoint.
-
-## Anonymous Visit Counter
-
-The app increments one anonymous visit per Streamlit browser session. It is not
-shown in the UI. Check Streamlit Cloud logs for lines like:
-
-```text
-VISIT_COUNTER total=12 day=2026-04-26 day_count=3 last_visit_utc=2026-04-26T11:30:00+00:00
-```
