@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import json
 import math
 from pathlib import Path
@@ -12,6 +13,7 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parent
 DATA_PATH = ROOT / "web/network_insurance_explorer/data/network_insurance_explorer_data.js"
+FEEDBACK_PATH = ROOT / "feedback_events.jsonl"
 
 COLORS = {
     "Domestic": "#168b86",
@@ -41,6 +43,30 @@ def load_data() -> dict:
     if text.endswith(";"):
         text = text[:-1]
     return json.loads(text)
+
+
+def record_feedback() -> None:
+    event = {
+        "event": "app_opened_ok",
+        "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    try:
+        with FEEDBACK_PATH.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(event, sort_keys=True) + "\n")
+        print(f"FEEDBACK_EVENT {json.dumps(event, sort_keys=True)}", flush=True)
+    except Exception as exc:
+        print(f"FEEDBACK_EVENT_ERROR {type(exc).__name__}: {exc}", flush=True)
+
+
+def feedback_button() -> None:
+    st.divider()
+    left, _ = st.columns([1, 4])
+    with left:
+        disabled = st.session_state.get("_feedback_sent", False)
+        if st.button("App opened OK", disabled=disabled, help="Optional: lets the author know the demo loaded successfully."):
+            st.session_state["_feedback_sent"] = True
+            record_feedback()
+            st.success("Thanks, noted.")
 
 
 def pct(x, digits=1):
@@ -428,6 +454,8 @@ def main():
         dynamic(data, country)
     else:
         bridge()
+
+    feedback_button()
 
 
 if __name__ == "__main__":

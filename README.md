@@ -20,3 +20,11 @@ streamlit run streamlit_app.py
 ## Deploy on Streamlit Community Cloud
 
 Use `streamlit_app.py` as the app entrypoint.
+
+## Feedback Signal
+
+The app includes a small optional `App opened OK` button. When clicked, it logs:
+
+```text
+FEEDBACK_EVENT {"event": "app_opened_ok", "timestamp_utc": "..."}
+```
